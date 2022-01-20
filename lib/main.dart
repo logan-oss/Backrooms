@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
       color: Colors.blue,
       textColor: Colors.white,
       child: const Icon(
-        Icons.info,
+        Icons.book,
         size: 30,
       ),
       padding: const EdgeInsets.all(16),
