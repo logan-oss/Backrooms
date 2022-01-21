@@ -35,6 +35,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   url_launcher: ^6.0.18
+  firebase_core: ^1.11.0
+  cloud_firestore: ^3.1.6
+  path_provider: ^2.0.8
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +69,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/data/backrooms.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

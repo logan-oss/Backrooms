@@ -2,9 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+import 'dart:convert';
 import 'info.dart';
+import './game.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
@@ -40,8 +50,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    List data = [];
+    String dataString = jsonEncode(data);
+
     bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
+
+    CollectionReference _collectionRef =
+        FirebaseFirestore.instance.collection('backrooms');
+
+    Future<void> getData() async {
+      // Get docs from collection reference
+      QuerySnapshot querySnapshot = await _collectionRef.get();
+
+      // Get data from docs and convert map to List
+      final allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+      print(allData);
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -140,7 +165,12 @@ class _HomePageState extends State<HomePage> {
 
   Widget btnJouer() {
     return RaisedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Game()),
+        );
+      },
       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
       color: Colors.blue.shade900,
       shape: const RoundedRectangleBorder(
