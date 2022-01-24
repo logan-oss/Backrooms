@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 import 'dart:convert';
 import 'info.dart';
 import './game.dart';
+import './services/documentManager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +52,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    DocumentManager d = DocumentManager('backroomsData.json');
+
+    initDoc() async {
+      while (!d.onReady) {
+        await Future.delayed(Duration(milliseconds: 100), () {});
+      }
+    }
+
+    initDoc();
+
     List data = [];
     String dataString = jsonEncode(data);
 
