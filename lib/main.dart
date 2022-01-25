@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_backroom/services/autoMaj.dart';
 import 'package:path_provider/path_provider.dart';
 import 'firebase_options.dart';
 import 'dart:convert';
@@ -52,15 +53,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    DocumentManager d = DocumentManager('backroomsData.json');
-
-    initDoc() async {
-      while (!d.onReady) {
-        await Future.delayed(Duration(milliseconds: 100), () {});
-      }
-    }
-
-    initDoc();
 
     List data = [];
     String dataString = jsonEncode(data);
@@ -68,17 +60,8 @@ class _HomePageState extends State<HomePage> {
     bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
 
-    CollectionReference _collectionRef =
-        FirebaseFirestore.instance.collection('backrooms');
-
-    Future<void> getData() async {
-      // Get docs from collection reference
-      QuerySnapshot querySnapshot = await _collectionRef.get();
-
-      // Get data from docs and convert map to List
-      final allData = querySnapshot.docs.map((doc) => doc.data()).toList();
-      print(allData);
-    }
+    AutoMaj autoMaj = new AutoMaj();
+    autoMaj.doTheMaj();
 
     return Scaffold(
       resizeToAvoidBottomInset: false,

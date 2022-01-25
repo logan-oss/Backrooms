@@ -4,52 +4,48 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 
 class DocumentManager {
-  late File _jsonFile;
-  late Directory _dir;
-  late String fileName;
-  bool _fileExists = false;
-  late bool onReady = false;
 
-  DocumentManager(String fileName) {
-    getApplicationDocumentsDirectory().then((Directory directory) => {
-          this.fileName = fileName,
-          _dir = directory,
-          _jsonFile = File(_dir.path + '/' + fileName),
-          _fileExists = _jsonFile.existsSync(),
-          onReady = true,
-        });
+  Future<Directory> getRootPath(){
+    return getApplicationDocumentsDirectory();
   }
 
-  void createFile(content) {
-    List<String> list = [];
-    list.add(jsonEncode(content));
-    File file = File(_dir.path + '/' + fileName);
+  void createFile(content,fileName,dir) {
+    File file = File(dir.path + '/' + fileName);
     file.createSync();
-    _fileExists = true;
-    file.writeAsStringSync(jsonEncode(list));
+    print("hello");
+    print(content);
+    file.writeAsStringSync(content);
   }
 
-  void deleteFile() {
-    _jsonFile.delete();
-  }
-
-  void writeToFile(content) {
-    if (_fileExists) {
-      print("yes1");
-      List<dynamic> list = [];
-      list = jsonDecode(_jsonFile.readAsStringSync());
-      list.add(jsonEncode(content));
-      _jsonFile.writeAsStringSync(jsonEncode(list));
-    } else {
-      print("yes2");
-      createFile(content);
+  void deleteFile(fileName) async {
+    Directory dir = await getRootPath();
+    File jsonFile = File(dir.path + '/' + fileName);
+    if(jsonFile.existsSync()) {
+      jsonFile.delete();
     }
   }
 
-  String readFile() {
-    if (_fileExists)
-      return _jsonFile.readAsStringSync();
-    else
-      return "";
+  Future<String> writeToFile(content,fileName) async {
+    Directory dir = await getRootPath();
+    File jsonFile = File(dir.path + '/' + fileName);
+    if (jsonFile.existsSync()) {
+      List<dynamic> list = [];
+      list = jsonDecode(jsonFile.readAsStringSync());
+      list.add(jsonEncode(content));
+      jsonFile.writeAsStringSync(jsonEncode(list));
+    } else {
+      createFile(content,fileName,dir);
+    }
+    return await readFile(fileName);
+  }
+
+  Future<String> readFile(fileName) async{
+    Directory dir = await getRootPath();
+    File jsonFile = File(dir.path + '/' + fileName);
+    try {
+      return jsonFile.readAsStringSync();
+    } catch (e) {
+      return '';
+    }
   }
 }
