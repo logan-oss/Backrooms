@@ -48,7 +48,7 @@ class InfoPage extends StatelessWidget {
         divider(),
         space(20),
         Text(
-          "Après une des journées les plus rudes de votre vis, vous vous empressez de rentrer chez vous et de fermer votre porte à clef. Pris d'une colère incontrôlable vous tapez sur un des murs de votre salon, fermant les yeux et en criant de toutes vos forces. C'est après de nombreuses minutes que vous vous calmez enfin et réouvrez les yeux. C'est alors que vous remarquez que vous être dans un endroit inconnu mais familier, sans bruits, sans personnes.... \n \n"
+          "Après une des journées les plus rudes de votre vie, vous vous empressez de rentrer chez vous et de fermer votre porte à clef. Pris d'une colère incontrôlable vous tapez sur un des murs de votre salon, fermant les yeux et en criant de toutes vos forces. C'est après de nombreuses minutes que vous vous calmez enfin et réouvrez les yeux. C'est alors que vous remarquez que vous être dans un endroit inconnu mais familier, sans bruits, sans personnes.... \n \n"
           "Vous vous demandez sûrement ou vous êtes et je vais vous expliquer. Il arrive parfois que des personnes, par diverses moyens, se détachent de la réalité et se retrouvent dans cette dimension. Mais ne paniquez pas, il est possible d'y sortir. Pour cela il faut vous enfoncer dans les backrooms, si possibles accompagne, afin de tenter de s'échapper.",
           textAlign: TextAlign.justify,
           style: TextStyle(fontSize: paragraphe),

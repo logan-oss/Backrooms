@@ -6,39 +6,41 @@ import './documentManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AutoMaj {
-
   final DocumentManager _documentManager = DocumentManager();
   late List<dynamic> localBackroomsList;
-  
-  doTheMaj() async{
-    _documentManager.deleteFile("backrooms.json");
+
+  doTheMaj() async {
     String localContent = await getLocalContent();
 
     localBackroomsList = jsonDecode(localContent);
-    setAllNewContent(Timestamp(int.parse(localBackroomsList.last["release_modif"]), 0));
+    setAllNewContent(Timestamp(
+        await int.parse(localBackroomsList.last["release_modif"]), 0));
   }
 
-  Future<String> getLocalContent() async{
+  Future<String> getLocalContent() async {
     String localContent = await _documentManager.readFile("backrooms.json");
-    if(localContent.isEmpty){
-      String contentFile = await rootBundle.loadString("assets/initData/backrooms.json");
-      return await _documentManager.writeToFile(contentFile, "backrooms.json");
-    }
-    else{
+    if (localContent.isEmpty) {
+      String contentFile =
+          await rootBundle.loadString("assets/initData/backrooms.json");
+      _documentManager.resetData(contentFile, "backrooms.json");
+      return contentFile;
+    } else {
       return localContent;
     }
   }
 
-  Future<void> setAllNewContent(Timestamp lastUpDate) async{
+  Future<void> setAllNewContent(Timestamp lastUpDate) async {
     CollectionReference collectionRef =
         FirebaseFirestore.instance.collection('backrooms');
-      final querySnapshot = await collectionRef.where("release_modif", isGreaterThan: lastUpDate).get().then((document){
-        List<dynamic> backroomsList = (document.docs.map((e) => e.data()).toList());
-        for (var backrooms in backroomsList) {
-          final backroomsLink = localBackroomsList.firstWhere((b) => b["id"] == backrooms["id"]);
-          print(backroomsLink);
-        }
-      });
-  }
 
+    final querySnapshot = collectionRef
+        .where("release_modif", isGreaterThan: lastUpDate)
+        .get()
+        .then((document) {
+      for (var backrooms in document.docs) {
+        _documentManager.writeToFile(
+            backrooms, "backrooms.json"); // get all data from a object
+      }
+    });
+  }
 }

@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_backroom/services/autoMaj.dart';
 import 'package:path_provider/path_provider.dart';
+import 'creation.dart';
 import 'firebase_options.dart';
 import 'dart:convert';
 import 'info.dart';
@@ -53,7 +54,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-
     List data = [];
     String dataString = jsonEncode(data);
 
@@ -180,7 +180,12 @@ class _HomePageState extends State<HomePage> {
 
   Widget btnCreer() {
     return RaisedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Creation()),
+        );
+      },
       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
       color: Colors.purple,
       shape: const RoundedRectangleBorder(
