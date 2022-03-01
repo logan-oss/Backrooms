@@ -14,9 +14,13 @@ class SoundPlayer {
   }
 
   Future play() async {
-    await _audioPlayer!.startPlayer(
-      fromURI: 'assets/sounds/safe_level.mp3',
-    );
+    try {
+      await _audioPlayer!.startPlayer(
+        fromURI: 'assets/sounds/safe_level.mp3',
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future stop() async {
