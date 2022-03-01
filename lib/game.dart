@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import './services/dataManager.dart';
+import './services/soundPlayer.dart';
 
 class Game extends StatefulWidget {
   const Game({Key? key}) : super(key: key);
@@ -14,10 +14,20 @@ class _Game extends State<Game> {
   DataManager _dataManager = new DataManager();
   Map _backroom = {};
   Map _currentRoom = {};
+  final soundPlayer = SoundPlayer();
 
+  @override
   void initState() {
     super.initState();
+    soundPlayer.init();
+    soundPlayer.play();
     getBackroom(0);
+  }
+
+  @override
+  void dispose() {
+    soundPlayer.dispose();
+    super.dispose();
   }
 
   //--------------- Initial Build -------------//
@@ -61,8 +71,8 @@ class _Game extends State<Game> {
                                   child: Container(
                                       alignment: Alignment.topLeft,
                                       width: MediaQuery.of(context).size.width,
-                                      margin: EdgeInsets.all(15),
-                                      padding: EdgeInsets.all(15),
+                                      margin: const EdgeInsets.all(15),
+                                      padding: const EdgeInsets.all(15),
                                       color: Colors.grey.withOpacity(0.6),
                                       child: Column(
                                           crossAxisAlignment:
@@ -108,7 +118,7 @@ class _Game extends State<Game> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
+                            SizedBox(
                               width: MediaQuery.of(context).size.width * 0.6,
                               height: MediaQuery.of(context).size.height * 0.30,
                               child: GridView.count(
@@ -128,7 +138,7 @@ class _Game extends State<Game> {
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
+                          children: const <Widget>[
                             Text("Vous vous êtes échappé !"),
                           ],
                         ),
@@ -141,7 +151,7 @@ class _Game extends State<Game> {
                                 primary: Colors.white,
                                 backgroundColor: Colors.blue.shade300,
                               ),
-                              child: Text("Rejouer")),
+                              child: const Text("Rejouer")),
                           OutlinedButton(
                               onPressed: () {
                                 Navigator.pop(context);
@@ -150,7 +160,7 @@ class _Game extends State<Game> {
                                 primary: Colors.white,
                                 backgroundColor: Colors.red.shade400,
                               ),
-                              child: Text("Quitter")),
+                              child: const Text("Quitter")),
                         ],
                       )
                     : Container())),
@@ -171,7 +181,6 @@ class _Game extends State<Game> {
     if (_currentRoom == _backroom) {
       solutions = jsonDecode(_currentRoom["scenario"]);
     } else {
-      print(_currentRoom["scenario"]);
       solutions = _currentRoom["choices"];
     }
 
@@ -183,7 +192,7 @@ class _Game extends State<Game> {
     } else {
       int i = 1;
       for (var sol in solutions) {
-        solutionsWidg.add(Text("(${i}) " + sol["title"],
+        solutionsWidg.add(Text("($i) " + sol["title"],
             style: const TextStyle(fontSize: 18, color: Colors.black)));
         i++;
       }
@@ -208,10 +217,10 @@ class _Game extends State<Game> {
         onPressed: () {
           getBackroom(_currentRoom["exit"]);
         },
-        child: Icon(Icons.exit_to_app),
+        child: const Icon(Icons.exit_to_app),
         style: ElevatedButton.styleFrom(
-            shape: CircleBorder(),
-            padding: EdgeInsets.all(20),
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(20),
             primary: Colors.green.shade100),
       ));
     } else {
@@ -225,8 +234,8 @@ class _Game extends State<Game> {
           },
           child: Text("${i}"),
           style: ElevatedButton.styleFrom(
-              shape: CircleBorder(),
-              padding: EdgeInsets.all(20),
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(20),
               primary: Colors.green.shade100),
         ));
         i++;

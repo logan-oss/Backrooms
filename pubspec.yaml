@@ -41,6 +41,7 @@ dependencies:
   path_provider: ^2.0.8
   image_picker: ^0.8.4+8
   image_picker_for_web: ^2.1.5
+  flutter_sound_lite: ^8.5.0
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +74,7 @@ flutter:
   assets:
     - assets/images/
     - assets/initData/backrooms.json
+    - assets/sounds/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,10 +23,15 @@ class _Creation extends State<Creation> {
   Map<String, bool> _scenarioVisibility = {};
   DataManager _dataManager = new DataManager();
 
+  void initState() {
+    super.initState();
+    _backroom["difficulty"] = "Sécurisé";
+    _backroom["entities_count"] = "Minimale";
+  }
+
   //--------------- Initial Build -------------//
   @override
   Widget build(BuildContext context) {
-    print(_scenario);
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
@@ -86,45 +90,51 @@ class _Creation extends State<Creation> {
   //----------------------------------------------------------------//
 
   void _validation() async {
-    _backroom["scenario"] = jsonEncode(_scenario);
-    _backroom["release_modif"] = DateTime.now();
-    bool valid = await _dataManager.add(_backroom);
-    if (await valid) {
-      Navigator.of(context).pop();
+    bool valid = true;
+    String message = "";
+    if ((_backroom["title"] == null) || (_backroom["description"] == null)) {
+      valid = false;
+      message = "Titre ou description du niveau incomplete";
+    }
+
+    if (_backroom["image"] == null) {
+      valid = false;
+      message = "Vous devez choisir une image pour le niveau";
+    }
+
+    if (valid == true) {
+      valid = isTextValid(_scenario);
+      if (valid == false) {
+        message = "Titre ou description d'un choix incomplete";
+      }
+    }
+
+    if (valid == false) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) =>
+            _PopupErrorValidation(context, message),
+      );
+    } else {
+      _backroom["scenario"] = jsonEncode(_scenario);
+      _backroom["release_modif"] = DateTime.now();
+      bool valid = await _dataManager.add(_backroom);
+      if (await valid) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
-  Widget getBarScenario() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                  margin: EdgeInsets.all(5),
-                  child: Text("Scénario : ", style: TextStyle(fontSize: 30))),
-              Container(
-                  child: Row(
-                children: [
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
-                    icon: Icon(Icons.add_box),
-                    alignment: Alignment.topLeft,
-                    iconSize: 60,
-                    onPressed: () {
-                      addChoice([]);
-                    },
-                  ),
-                ],
-              )),
-            ],
-          ),
-        ),
-      ],
-    );
+  bool isTextValid(List choices) {
+    bool isValid = true;
+    for (var choice in choices) {
+      if ((choice["title"] == "") || (choice["description"] == "")) {
+        isValid = false;
+      } else if (choice["choices"].length > 0) {
+        isValid = isTextValid(choice["choices"]);
+      }
+    }
+    return isValid;
   }
 
   List<Widget> getScenario() {
@@ -290,6 +300,17 @@ class _Creation extends State<Creation> {
     });
   }
 
+  deleteExit(List<int> path) {
+    setState(() {
+      Map<dynamic, dynamic> choices = _scenario[path[0]];
+
+      for (var i = 1; i < path.length; i++) {
+        choices = choices["choices"][path[i]];
+      }
+      choices["exit"] = null;
+    });
+  }
+
   _getFromGallery() async {
     PickedFile? pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
@@ -389,6 +410,53 @@ class _Creation extends State<Creation> {
   //----------------------- Widget section -----------------------//
   //----------------------------------------------------------------//
 
+  Widget getBarScenario() {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                  margin: EdgeInsets.all(5),
+                  child: const Text("Scénario : ",
+                      style: TextStyle(fontSize: 30))),
+              Row(
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                    icon: Icon(Icons.info),
+                    alignment: Alignment.topLeft,
+                    iconSize: 60,
+                    color: Colors.blue.shade300,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => _PopupHelp(context),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                    icon: Icon(Icons.add_box),
+                    alignment: Alignment.topLeft,
+                    iconSize: 60,
+                    onPressed: () {
+                      addChoice([]);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget addChoiceWidget(
       List<int> path, double margin, String choiceId, IconData icon) {
     return Row(children: [
@@ -413,7 +481,7 @@ class _Creation extends State<Creation> {
                     switchVisible(choiceId);
                   },
                 ),
-                Text("Choix i"),
+                Text("Choix ${(path.last + 1).toString()}"),
               ]),
               Row(children: [
                 IconButton(
@@ -452,6 +520,9 @@ class _Creation extends State<Creation> {
                   alignment: Alignment.topLeft,
                   iconSize: 40,
                   onPressed: () {
+                    if (_scenarioVisibility[choiceId] == false) {
+                      switchVisible(choiceId);
+                    }
                     deleteChoice(path);
                   },
                 ),
@@ -503,14 +574,14 @@ class _Creation extends State<Creation> {
     return Row(children: [
       Container(
           margin: EdgeInsets.fromLTRB(margin + 5, 5, 5, 5),
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
           height: 60,
           width: MediaQuery.of(context).size.width - 10,
           color: Colors.orange,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Description"),
+              const Text("Description"),
               if (description == "")
                 Text("A completer !",
                     style: TextStyle(
@@ -547,12 +618,12 @@ class _Creation extends State<Creation> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(children: [
+              Row(children: const [
                 Icon(Icons.exit_to_app),
                 Text("Sortie"),
               ]),
               Row(children: [
-                Text("Niveau : "),
+                const Text("Niveau : "),
                 OutlinedButton(
                   onPressed: () {
                     showDialog(
@@ -567,6 +638,23 @@ class _Creation extends State<Creation> {
                   ),
                   child: Text(level.toString()),
                 ),
+                Container(
+                  margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                  child: SizedBox(
+                    width: 40,
+                    child: FittedBox(
+                      child: IconButton(
+                        color: Colors.white,
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                        icon: Icon(Icons.cancel),
+                        onPressed: () {
+                          deleteExit(path);
+                        },
+                      ),
+                    ),
+                  ),
+                )
               ])
             ],
           )),
@@ -576,8 +664,8 @@ class _Creation extends State<Creation> {
   Widget addPicture() {
     return Row(children: [
       Container(
-          margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
           height: 60,
           width: MediaQuery.of(context).size.width - 10,
           color: Colors.blue.shade400,
@@ -585,11 +673,11 @@ class _Creation extends State<Creation> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(children: [
-                Text("Image : "),
+                const Text("Image : "),
                 if (_backroom["image"] != null)
                   Image.memory(base64.decode(_backroom["image"]), height: 50)
                 else
-                  Icon(Icons.image),
+                  const Icon(Icons.image),
               ]),
               Row(children: [
                 OutlinedButton(
@@ -600,7 +688,7 @@ class _Creation extends State<Creation> {
                     primary: Colors.white,
                     backgroundColor: Colors.teal,
                   ),
-                  child: Icon(Icons.add_a_photo),
+                  child: const Icon(Icons.add_a_photo),
                 ),
               ])
             ],
@@ -611,7 +699,7 @@ class _Creation extends State<Creation> {
   Widget addDifficulty() {
     return Row(children: [
       Container(
-          margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+          margin: const EdgeInsets.fromLTRB(0, 5, 0, 5),
           height: 65,
           width: MediaQuery.of(context).size.width,
           child: Row(children: [
@@ -620,13 +708,14 @@ class _Creation extends State<Creation> {
                 child: Container(
                     width: double.infinity,
                     height: double.infinity,
-                    margin: EdgeInsets.fromLTRB(5, 5, 2, 5),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    margin: const EdgeInsets.fromLTRB(5, 5, 2, 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     color: Colors.white,
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Difficultée : ",
+                          const Text("Difficultée : ",
                               style: TextStyle(color: Colors.black)),
                           OutlinedButton(
                             onPressed: () {
@@ -640,7 +729,7 @@ class _Creation extends State<Creation> {
                               primary: Colors.white,
                               backgroundColor: Colors.teal,
                             ),
-                            child: Text("Select"),
+                            child: const Text("Select"),
                           ),
                         ]))),
             Flexible(
@@ -648,13 +737,14 @@ class _Creation extends State<Creation> {
                 child: Container(
                   width: double.infinity,
                   height: double.infinity,
-                  margin: EdgeInsets.fromLTRB(2, 5, 5, 5),
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  margin: const EdgeInsets.fromLTRB(2, 5, 5, 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   color: Colors.pink,
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Nb entitées : "),
+                        const Text("Nb entitées : "),
                         OutlinedButton(
                           onPressed: () {
                             showDialog(
@@ -667,7 +757,7 @@ class _Creation extends State<Creation> {
                             primary: Colors.white,
                             backgroundColor: Colors.teal,
                           ),
-                          child: Text("Select"),
+                          child: const Text("Select"),
                         ),
                       ]),
                 )),
@@ -710,7 +800,7 @@ class _Creation extends State<Creation> {
               primary: Colors.white,
               backgroundColor: Colors.teal,
             ),
-            child: Text("Valider")),
+            child: const Text("Valider")),
       ],
     );
   }
@@ -744,7 +834,7 @@ class _Creation extends State<Creation> {
               primary: Colors.white,
               backgroundColor: Colors.red.shade400,
             ),
-            child: Text("Annuler")),
+            child: const Text("Annuler")),
         OutlinedButton(
             onPressed: () {
               modifDescr(path, _descriptionController.text);
@@ -754,7 +844,7 @@ class _Creation extends State<Creation> {
               primary: Colors.white,
               backgroundColor: Colors.teal,
             ),
-            child: Text("Valider")),
+            child: const Text("Valider")),
       ],
     );
   }
@@ -786,7 +876,7 @@ class _Creation extends State<Creation> {
               primary: Colors.white,
               backgroundColor: Colors.red.shade400,
             ),
-            child: Text("Annuler")),
+            child: const Text("Annuler")),
         OutlinedButton(
             onPressed: () {
               modifLevel(path, int.parse(_levelController.text));
@@ -796,7 +886,7 @@ class _Creation extends State<Creation> {
               primary: Colors.white,
               backgroundColor: Colors.teal,
             ),
-            child: Text("Valider")),
+            child: const Text("Valider")),
       ],
     );
   }
@@ -817,7 +907,7 @@ class _Creation extends State<Creation> {
                 primary: Colors.white,
                 backgroundColor: Colors.teal,
               ),
-              child: Text("Minimale")),
+              child: const Text("Minimale")),
           OutlinedButton(
               onPressed: () {
                 modifNbEntity("Normal");
@@ -827,7 +917,7 @@ class _Creation extends State<Creation> {
                 primary: Colors.white,
                 backgroundColor: Colors.orange,
               ),
-              child: Text("Normal")),
+              child: const Text("Normal")),
           OutlinedButton(
               onPressed: () {
                 modifNbEntity("Beaucoups");
@@ -837,7 +927,7 @@ class _Creation extends State<Creation> {
                 primary: Colors.white,
                 backgroundColor: Colors.red.shade400,
               ),
-              child: Text("Beaucoups")),
+              child: const Text("Beaucoups")),
         ],
       ),
     );
@@ -845,7 +935,7 @@ class _Creation extends State<Creation> {
 
   Widget _PopupDifficulty(BuildContext context) {
     return AlertDialog(
-      title: const Text('Nombre d\'entités'),
+      title: const Text('Difficultée'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -859,7 +949,7 @@ class _Creation extends State<Creation> {
                 primary: Colors.white,
                 backgroundColor: Colors.teal,
               ),
-              child: Text("Sécurisé")),
+              child: const Text("Sécurisé")),
           OutlinedButton(
               onPressed: () {
                 modifDifficulty("Dangereux");
@@ -869,7 +959,7 @@ class _Creation extends State<Creation> {
                 primary: Colors.white,
                 backgroundColor: Colors.orange,
               ),
-              child: Text("Dangereux")),
+              child: const Text("Dangereux")),
           OutlinedButton(
               onPressed: () {
                 modifDifficulty("Mortel");
@@ -879,9 +969,67 @@ class _Creation extends State<Creation> {
                 primary: Colors.white,
                 backgroundColor: Colors.red.shade400,
               ),
-              child: Text("Mortel")),
+              child: const Text("Mortel")),
         ],
       ),
     );
+  }
+
+  Widget _PopupErrorValidation(BuildContext context, String message) {
+    return AlertDialog(
+      title: const Text('Error'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(message),
+        ],
+      ),
+      actions: <Widget>[
+        OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: OutlinedButton.styleFrom(
+              primary: Colors.white,
+              backgroundColor: Colors.red.shade400,
+            ),
+            child: const Text("OK")),
+      ],
+    );
+  }
+
+  Widget _PopupHelp(BuildContext context) {
+    return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.all(10),
+        child: Stack(
+          overflow: Overflow.visible,
+          alignment: Alignment.topRight,
+          children: <Widget>[
+            Container(
+              child: SingleChildScrollView(
+                  child: Container(
+                      padding: EdgeInsets.fromLTRB(0, 60, 0, 0),
+                      child: Image.asset(
+                        'assets/images/help_backroom.png',
+                      ))),
+            ),
+            SizedBox(
+              width: 50,
+              child: FittedBox(
+                child: IconButton(
+                  color: Colors.red,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.cancel),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ),
+          ],
+        ));
   }
 }
