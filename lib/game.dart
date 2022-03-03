@@ -15,18 +15,18 @@ class _Game extends State<Game> {
   Map _backroom = {};
   Map _currentRoom = {};
   final soundPlayer = SoundPlayer();
+  List<Widget> buttons = [];
 
   @override
   void initState() {
     super.initState();
     soundPlayer.init();
-    soundPlayer.play();
     getBackroom(0);
   }
 
   @override
   void dispose() {
-    soundPlayer.dispose();
+    soundPlayer.stop();
     super.dispose();
   }
 
@@ -38,6 +38,8 @@ class _Game extends State<Game> {
     if (_backroom["image"] != null) {
       img = MemoryImage(base64Decode(_backroom["image"]));
     }
+
+    buttons = getScenarioButton();
 
     return Scaffold(
       body: Center(
@@ -118,15 +120,23 @@ class _Game extends State<Game> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.6,
-                              height: MediaQuery.of(context).size.height * 0.30,
-                              child: GridView.count(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 10,
-                                  children: getScenarioButton()),
-                            )
+                            (buttons.length > 1)
+                                ? SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.6,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.30,
+                                    child: GridView.count(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 10,
+                                        children: getScenarioButton()))
+                                : SizedBox(
+                                    width: 120,
+                                    height: 120,
+                                    child: Container(
+                                      child: buttons[0],
+                                    ))
                           ],
                         ),
                       ),
@@ -174,6 +184,7 @@ class _Game extends State<Game> {
       _currentRoom = back;
       _backroom = back;
     });
+    startSound();
   }
 
   List<Widget> getSolutions() {
@@ -202,6 +213,10 @@ class _Game extends State<Game> {
   }
 
   List<Widget> getScenarioButton() {
+    if (_currentRoom["title"] == null) {
+      return [];
+    }
+
     List solutions = [];
 
     if (_currentRoom == _backroom) {
@@ -228,9 +243,14 @@ class _Game extends State<Game> {
       for (var sol in solutions) {
         solutionsWidg.add(ElevatedButton(
           onPressed: () {
-            setState(() {
-              _currentRoom = sol;
-            });
+            if ((sol["choices"].length > 0) || (sol["exit"] != null)) {
+              setState(() {
+                _currentRoom = sol;
+              });
+            } else {
+              getBackroom(int.tryParse(_backroom["id"])
+                  as int); // Pour éviter de rester bloquer au même endroit
+            }
           },
           child: Text("${i}"),
           style: ElevatedButton.styleFrom(
@@ -246,5 +266,23 @@ class _Game extends State<Game> {
 
   void replay() {
     getBackroom(0);
+  }
+
+  void startSound() {
+    String file = "";
+    soundPlayer.stop();
+    switch (_backroom["difficulty"]) {
+      case "Sécurisé":
+        file = "safe_level.mp3";
+        break;
+      case "Dangereux":
+        file = "unsafe_level.mp3";
+        break;
+      case "Mortel":
+        file = "danger_level.mp3";
+        break;
+    }
+
+    soundPlayer.loop(file);
   }
 }

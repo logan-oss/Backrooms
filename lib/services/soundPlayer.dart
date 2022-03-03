@@ -1,37 +1,23 @@
-import 'package:flutter_sound_lite/public/flutter_sound_player.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class SoundPlayer {
-  FlutterSoundPlayer? _audioPlayer;
+  AudioCache? _audioCache;
+  AudioPlayer? _audioPlayer;
 
   Future init() async {
-    _audioPlayer = FlutterSoundPlayer();
-    await _audioPlayer!.openAudioSession();
+    _audioCache = AudioCache(prefix: 'assets/sounds/');
+    _audioPlayer = AudioPlayer();
   }
 
-  Future dispose() async {
-    _audioPlayer!.closeAudioSession();
-    _audioPlayer = null;
+  Future play(String file) async {
+    _audioPlayer = await _audioCache!.play(file);
   }
 
-  Future play() async {
-    try {
-      await _audioPlayer!.startPlayer(
-        fromURI: 'assets/sounds/safe_level.mp3',
-      );
-    } catch (e) {
-      print(e);
-    }
+  Future loop(String file) async {
+    _audioPlayer = await _audioCache!.loop(file);
   }
 
   Future stop() async {
-    await _audioPlayer!.stopPlayer();
-  }
-
-  Future _togglePlaying() async {
-    if (_audioPlayer!.isStopped) {
-      await play();
-    } else {
-      await stop();
-    }
+    _audioPlayer!.stop();
   }
 }

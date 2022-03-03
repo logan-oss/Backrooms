@@ -109,6 +109,13 @@ class _Creation extends State<Creation> {
       }
     }
 
+    if (valid == true) {
+      valid = canExit(_scenario);
+      if (valid == false) {
+        message = "Le niveau doit avoir au moins une sortie";
+      }
+    }
+
     if (valid == false) {
       showDialog(
         context: context,
@@ -132,6 +139,18 @@ class _Creation extends State<Creation> {
         isValid = false;
       } else if (choice["choices"].length > 0) {
         isValid = isTextValid(choice["choices"]);
+      }
+    }
+    return isValid;
+  }
+
+  bool canExit(List choices) {
+    bool isValid = false;
+    for (var choice in choices) {
+      if (choice["exit"] != null) {
+        return true;
+      } else if (choice["choices"].length > 0) {
+        isValid = canExit(choice["choices"]);
       }
     }
     return isValid;

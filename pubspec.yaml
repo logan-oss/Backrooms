@@ -41,7 +41,7 @@ dependencies:
   path_provider: ^2.0.8
   image_picker: ^0.8.4+8
   image_picker_for_web: ^2.1.5
-  flutter_sound_lite: ^8.5.0
+  audioplayers: ^0.20.1
 
 dev_dependencies:
   flutter_test:
