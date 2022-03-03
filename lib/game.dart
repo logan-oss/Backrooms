@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import './services/dataManager.dart';
 import './services/soundPlayer.dart';
+import 'package:provider/provider.dart';
 
 class Game extends StatefulWidget {
   const Game({Key? key}) : super(key: key);
@@ -16,6 +17,8 @@ class _Game extends State<Game> {
   Map _currentRoom = {};
   final soundPlayer = SoundPlayer();
   List<Widget> buttons = [];
+  final _scrollController = ScrollController();
+  String _scrollPosition = "top";
 
   @override
   void initState() {
@@ -48,100 +51,121 @@ class _Game extends State<Game> {
             height: double.maxFinite,
             child: ((_currentRoom["title"] != null) &&
                     (_backroom["id"] != null))
-                ? Column(
-                    children: [
-                      Container(
-                        width: double.maxFinite,
-                        height: MediaQuery.of(context).size.height * 0.65,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: img,
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                        child: Column(children: [
-                          Container(
-                            alignment: Alignment.center,
-                            width: double.maxFinite,
-                            height: 80,
-                            color: Colors.black54,
-                            child: Text("Niveau " + _backroom["id"].toString(),
-                                style: const TextStyle(fontSize: 40)),
-                          ),
-                          Flexible(
-                              child: SingleChildScrollView(
-                                  child: Container(
-                                      alignment: Alignment.topLeft,
-                                      width: MediaQuery.of(context).size.width,
-                                      margin: const EdgeInsets.all(15),
-                                      padding: const EdgeInsets.all(15),
-                                      color: Colors.grey.withOpacity(0.6),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                                Text(_currentRoom["title"],
-                                                    style: const TextStyle(
-                                                        fontSize: 40,
-                                                        color: Colors.black)),
-                                                const SizedBox(
-                                                  height: 40,
-                                                ),
-                                                const Text("Description : ",
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        color: Colors.black)),
-                                                const SizedBox(
-                                                  height: 20,
-                                                ),
-                                                Text(
-                                                    _currentRoom["description"],
-                                                    style: const TextStyle(
-                                                        fontSize: 18,
-                                                        color: Colors.black)),
-                                                const SizedBox(
-                                                  height: 20,
-                                                ),
-                                                const Text("Actions :",
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        color: Colors.black)),
-                                                const SizedBox(
-                                                  height: 20,
-                                                ),
-                                              ] +
-                                              getSolutions()))))
-                        ]),
+                ? Container(
+                    height: double.maxFinite,
+                    width: double.maxFinite,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: img,
+                        fit: BoxFit.fill,
                       ),
-                      Container(
-                        width: double.maxFinite,
-                        height: MediaQuery.of(context).size.height * 0.35,
-                        color: Colors.red.shade400,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            (buttons.length > 1)
-                                ? SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.6,
-                                    height: MediaQuery.of(context).size.height *
-                                        0.30,
-                                    child: GridView.count(
-                                        crossAxisCount: 2,
-                                        mainAxisSpacing: 10,
-                                        crossAxisSpacing: 10,
-                                        children: getScenarioButton()))
-                                : SizedBox(
-                                    width: 120,
-                                    height: 120,
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.maxFinite,
+                          height: MediaQuery.of(context).size.height * 0.65,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  width: 2.0,
+                                  color: Color.fromARGB(255, 0, 0, 0)),
+                            ),
+                          ),
+                          child: Column(children: [
+                            Container(
+                              alignment: Alignment.center,
+                              width: double.maxFinite,
+                              height: 80,
+                              color: Colors.black54,
+                              child: Text(
+                                  "Niveau " + _backroom["id"].toString(),
+                                  style: const TextStyle(fontSize: 40)),
+                            ),
+                            Flexible(
+                                child: Stack(
+                              alignment: Alignment.topCenter,
+                              children: [
+                                SingleChildScrollView(
+                                    controller: _scrollController,
                                     child: Container(
-                                      child: buttons[0],
-                                    ))
-                          ],
+                                        alignment: Alignment.topLeft,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        margin: const EdgeInsets.all(15),
+                                        padding: const EdgeInsets.all(15),
+                                        color: Colors.grey.withOpacity(0.6),
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                                  Text(_currentRoom["title"],
+                                                      style: const TextStyle(
+                                                          fontSize: 40,
+                                                          color: Colors.black)),
+                                                  const SizedBox(
+                                                    height: 40,
+                                                  ),
+                                                  const Text("Description : ",
+                                                      style: TextStyle(
+                                                          fontSize: 20,
+                                                          color: Colors.black)),
+                                                  const SizedBox(
+                                                    height: 20,
+                                                  ),
+                                                  Text(
+                                                      _currentRoom[
+                                                          "description"],
+                                                      style: const TextStyle(
+                                                          fontSize: 18,
+                                                          color: Colors.black)),
+                                                  const SizedBox(
+                                                    height: 20,
+                                                  ),
+                                                  const Text("Actions :",
+                                                      style: TextStyle(
+                                                          fontSize: 20,
+                                                          color: Colors.black)),
+                                                  const SizedBox(
+                                                    height: 20,
+                                                  ),
+                                                ] +
+                                                getSolutions()))),
+                                //getArrowUp()
+                              ],
+                            )),
+                          ]),
                         ),
-                      ),
-                    ],
-                  )
+                        Container(
+                          width: double.maxFinite,
+                          height: MediaQuery.of(context).size.height * 0.35,
+                          color: Colors.black38,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              (buttons.length > 1)
+                                  ? SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.30,
+                                      child: GridView.count(
+                                          crossAxisCount: 2,
+                                          mainAxisSpacing: 10,
+                                          crossAxisSpacing: 10,
+                                          children: getScenarioButton()))
+                                  : SizedBox(
+                                      width: 120,
+                                      height: 120,
+                                      child: Container(
+                                        child: buttons[0],
+                                      ))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ))
                 : ((_backroom["win"] != null)
                     ? AlertDialog(
                         title: const Text('Victoire !!!'),
@@ -186,6 +210,24 @@ class _Game extends State<Game> {
     });
     startSound();
   }
+
+  /* setArrowListener(BuildContext context) {
+    final _Game _game = Provider.of<_Game>(context);
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge) {
+        bool isTop = _scrollController.position.pixels == 0;
+        if (isTop) {
+          setState(() {
+            _scrollPosition = "top";
+          });
+        } else {
+          setState(() {
+            _scrollPosition = "bottom";
+          });
+        }
+      }
+    });
+  } */
 
   List<Widget> getSolutions() {
     List solutions = [];
@@ -262,6 +304,28 @@ class _Game extends State<Game> {
       }
     }
     return solutionsWidg;
+  }
+
+  Widget getArrowUp() {
+    if (_scrollPosition == "top") {
+      return Positioned(
+        bottom: 0,
+        child: Icon(
+          Icons.arrow_drop_down,
+          color: Colors.red.shade300,
+          size: 80,
+        ),
+      );
+    } else {
+      return Positioned(
+        top: 0,
+        child: Icon(
+          Icons.arrow_drop_up,
+          color: Colors.red.shade300,
+          size: 80,
+        ),
+      );
+    }
   }
 
   void replay() {

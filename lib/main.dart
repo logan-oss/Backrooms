@@ -3,15 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_backroom/services/autoMaj.dart';
-import 'package:path_provider/path_provider.dart';
 import 'creation.dart';
 import 'firebase_options.dart';
 import 'dart:convert';
 import 'info.dart';
 import './game.dart';
-import './services/documentManager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,7 +57,7 @@ class _HomePageState extends State<HomePage> {
     bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
 
-    AutoMaj autoMaj = new AutoMaj();
+    AutoMaj autoMaj = AutoMaj();
     autoMaj.doTheMaj();
 
     return Scaffold(

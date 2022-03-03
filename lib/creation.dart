@@ -128,6 +128,8 @@ class _Creation extends State<Creation> {
       bool valid = await _dataManager.add(_backroom);
       if (await valid) {
         Navigator.of(context).pop();
+      } else {
+        _PopupErrorValidation(context, "Erreur de connexion");
       }
     }
   }
